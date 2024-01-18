@@ -2,7 +2,7 @@
 
 > TODO: Choose a name lol
 
-A straightforward plugin to render _proper_ La in the Obsidian editor.
+A straightforward plugin to render _proper_ LaTeX in the Obsidian editor.
 
 ## Overview
 
