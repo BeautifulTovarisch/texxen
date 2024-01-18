@@ -1,9 +1,9 @@
 {
-	"id": "myst-live-preview",
-	"name": "MyST Live Preview",
+	"id": "texxen",
+	"name": "TeXXen",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Allows MyST markdown to be rendered in reading mode",
+	"description": "Allows rendering of more advanced LaTeX in markdown files",
 	"author": "Anthony",
 	"isDesktopOnly": false
 }

@@ -1,7 +1,8 @@
 {
-  "name": "myst-plugin-obsidian",
+  "name": "texxen",
+  "type": "module",
   "version": "1.0.0",
-  "description": "A plugin that renders MyST markdown in the Obsidian Editor",
+  "description": "A plugin that renders LaTeX in reading mode",
   "main": "main.ts",
   "scripts": {
     "test": "jest",
@@ -11,13 +12,14 @@
   },
   "keywords": [
     "obsidian",
-    "myst",
+    "latex",
     "markdown",
     "plugin"
   ],
   "author": "Anthony Re",
   "license": "ISC",
   "devDependencies": {
+    "@types/markdown-it": "^13.0.7",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
@@ -27,6 +29,6 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "mystmd": "^1.1.37"
+    "markdown-it": "^14.0.0"
   }
 }

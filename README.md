@@ -1,20 +1,22 @@
-# MySTViewer
+# TeXXen
 
-A straightforward plugin to render MyST in the Obsidian editor.
+> TODO: Choose a name lol
+
+A straightforward plugin to render _proper_ La in the Obsidian editor.
 
 ## Overview
 
-This plugin renders MyST markdown syntax in Obsidian's reading mode. It is
-intended for an those who author [MyST files](https://myst-parser.readthedocs.io/en/latest/)
-rather than use Obsidian's markdown syntax.
+This plugin scans a markdown file in obsidian for La blocks interleaved in
+the body of the document. This content is then delivered to a  installation,
+which returns the content as a web-friendly SVG.
 
-This project was motivated by a need to host [my notes](https://github.com/BeautifulTovarisch/Notes)
-written with Obsidian and built with Sphinx.
+The motivation for writing this to allow Obsidian as a viable editor for math
+and computer science notes intended to be published to my website.
 
 ## Usage
 
-After enabling MySTViewer in a vault, the plugin should automatically attempt
-to render markdown as MyST. There is no configuration for this plugin.
+After installation and configuration, the plugin will automatically attempt to
+render content appropriately when entering Reading mode.
 
 ## Project Scope
 
@@ -24,8 +26,7 @@ are no plans to support coexistence between the two within the same vault.
 
 ## Project Architecture
 
-This project is written in TypeScript and contains minimal dependencies outside
-of those needed to build/bundle the plugin.
+This core plugin is written in TypeScript and contains minimal dependencies.
 
 ### Major Dependencies
 
@@ -33,23 +34,30 @@ of those needed to build/bundle the plugin.
 |--------------|-------|
 |Node          |20.11.0|
 |TypeScript    |5.3.3  |
+|Markdown It   |14.0.0 |
 |Obsidian (API)|1.4.11 |
+
+###  Server
+
+TeXXen relies on a TeX server to compile LaTeX blocks. If the specified server
+cannot be reached, LaTeX is rendered with limited support provided by MathJax.
+
+> TODO: Create a dockerfile (or whatever the new thing is) of a working TeX
+> installation and HTTP server.
 
 ## Getting Started
 
 ### Development Setup
 
-Begin by creating an empty vault in order to test the plugin. A sample MyST MD
-file called `example-myst.md` has been included to help with testing.
-
-```bash
-cp example-myst.md <path/to/new/vault>
-```
+Begin by creating an empty vault in order to test the plugin. A sample MD
+file called `example.md` has been included to help with testing.
 
 Next, clone this repository with:
 
 ```bash
-git clone <TODO> --branch=develop
+cd <path/to/new/vault>/.obsidian/plugins
+
+git clone git@github.com:BeautifulTovarisch/texxen.git --branch=develop
 ```
 
 and install its dependencies:
