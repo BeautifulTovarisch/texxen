@@ -20,31 +20,57 @@ import { createReadStream } from 'fs';
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.PORT || '8080';
 
+const cacheTTL = 3600 * 24;
+
 const server = createServer({
   keepAlive: true
 });
 
+// TODO: Clean this mess up.
 server.on('request', (req, res) => {
-  res.setHeader('accept', 'text/plain');
+  res.setHeader('Accept', 'text/plain');
 
-  if (req.method !== 'POST') {
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': ['OPTIONS', 'POST'],
+      'Access-Control-Allow-Headers': [
+        'Accept',
+        'Accept-Language',
+        'Content-Type'
+      ],
+      'Access-Control-Max-Age': cacheTTL
+    });
+
+    return res.end();
+  }
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST');
+  res.setHeader('Access-Control-Max-Age', cacheTTL);
+
+  if (req.method !== 'GET') {
     res.statusCode = 405;
-    res.setHeader('allow', 'POST');
+    res.setHeader('Allow', 'GET');
 
     return res.end(`${STATUS_CODES[405]}\n`);
   }
 
+  // Remove the leading slash from the url.
+  const latex = decodeURIComponent(req.url).slice(1);
+
   const tex = spawn('pdflatex');
 
-  // Pipe the request body to pdflatex for compilation
-  req.pipe(tex.stdin);
+  // SUPER SECURE
+  tex.stdin.write(`${latex}`);
+  tex.stdin.end();
 
-  // TODO: Some simple logging.
-  tex.stderr.on('data', (err) => {
-    console.error(err);
+  tex.stdout.on('data', (err) => {
+    const e = err.toString();
 
-    res.statusCode = 500;
-    res.end(`${STATUS_CODES[500]}: ${err}\n`);
+    if (e.includes('!') || e.includes('Emergency')) {
+      console.error(e);
+    }
   });
 
   // Check for successful TeX output, otherwise return an error to the client
@@ -54,18 +80,21 @@ server.on('request', (req, res) => {
     if (code) {
       console.error(`TeX exited with code: ${code} and signal: ${signal}`);
 
-      res.status = 500;
+      res.statusCode = 500;
       return res.end(`${STATUS_CODES[500]}\n`);
     }
 
     const convert = spawn('pdf2svg', ['texput.pdf', 'output.svg']);
 
-    convert.stderr.on('data', console.error);
+    convert.stderr.on('data', (err) => {
+      console.error('pdf2svg Error:', err.toString());
+    });
+
     convert.on('exit', (code, signal) => {
       if (code) {
         console.error(`pdf2svg exited with code: ${code} and signal: ${signal}`);
 
-        res.status = 500;
+        res.statusCode = 500;
         return res.end(`${STATUS_CODES[500]}\n`);
       }
 

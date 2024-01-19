@@ -44,6 +44,28 @@ const latexBlock = (text: string): Content => ({
     t: 'latex', text
 });
 
+/** formatLatexRequest wraps [latex] in a minimal structure needed for TeX to
+  * parse the snippet as a standalone document. */
+const formatLatexRequest = (latex: string) =>
+    encodeURIComponent(`\\documentclass{article}
+\\begin{document}
+${latex}
+\\end{document}`);
+
+/** requestSVG is a promise encapsulating a request to the TeX server which
+  * transforms a LaTeX expression into an SVG */
+const requestSVG = (latex: string) =>
+    fetch(`http://localhost:8080/${formatLatexRequest(latex)}`, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+            'Accept': 'image/svg+xml',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Content-Type': 'plain/text'
+        },
+        referrerPolicy: 'no-referrer',
+    }).then(res => res.text());
+
 /** parse recursively sections [content] into a list containing markdown and
   * LaTeX blocks. */
 export const parse = (content: string): Content[] => {
@@ -95,11 +117,13 @@ export default class MarkTeX extends Plugin {
 
             const text = await this.app.vault.read(note);
 
-            for (const block of parse(text)) {
-                if (block.t === 'markdown') {
-                    md.render(block.text);
-                }
-            }
+            const content = parse(text).map(block => {
+                return block.t === 'markdown'
+                    ? Promise.resolve(md.render(block.text))
+                    : requestSVG(block.text);
+            });
+
+            console.log(await Promise.all(content));
 
             void(element);
             void(context);
