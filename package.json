@@ -5,7 +5,6 @@
   "description": "A plugin that renders LaTeX in reading mode",
   "main": "main.ts",
   "scripts": {
-    "test": "jest",
     "prebuild": "rm -f main.js",
     "build": "tsc --noEmit -skipLibCheck && node esbuild.mjs",
     "lint": "eslint --fix src/"

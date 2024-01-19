@@ -27,7 +27,7 @@ server.on('request', (req, res) => {
     return res.end(STATUS_CODES[405]);
   }
 
-  const cat = spawn('cat');
+  const cat = spawn('pdflatex');
 
   req.pipe(cat.stdin);
 
