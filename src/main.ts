@@ -95,8 +95,8 @@ export default class MarkTeX extends Plugin {
 
             const text = await this.app.vault.read(note);
 
-            for (const block of parse(text).filter((c: Content) => c.t === 'markdown')) {
-                console.log(md.render(block.text));
+            for (const block of parse(text)) {
+                console.log(block);
             }
 
             void(element);
