@@ -38,11 +38,11 @@ type Content =
 
 const mdBlock = (text: string): Content => ({
     t: 'markdown', text
-})
+});
 
 const latexBlock = (text: string): Content => ({
     t: 'latex', text
-})
+});
 
 /** parse recursively sections [content] into a list containing markdown and
   * LaTeX blocks. */
@@ -61,9 +61,9 @@ export const parse = (content: string): Content[] => {
     const fenceEnd = content.indexOf('```', start+3);
 
     if (start > fenceStart && end < fenceEnd) {
-      const code = content.slice(0, fenceEnd+3);
+        const code = content.slice(0, fenceEnd+3);
 
-      return [mdBlock(code)].concat(parse(content.slice(fenceEnd+3)));
+        return [mdBlock(code)].concat(parse(content.slice(fenceEnd+3)));
     }
 
     // If we find a '$$' without a correspondind closing '$$', we assume its
@@ -96,7 +96,9 @@ export default class MarkTeX extends Plugin {
             const text = await this.app.vault.read(note);
 
             for (const block of parse(text)) {
-                console.log(block);
+                if (block.t === 'markdown') {
+                    md.render(block.text);
+                }
             }
 
             void(element);
