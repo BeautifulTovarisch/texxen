@@ -12,7 +12,7 @@
 // writing a suite of tools that enables streaming rather than excessive file
 // I/O.
 
-import { rm } from 'node:fs/promises';
+import { unlink } from 'node:fs/promises';
 import { spawn } from 'child_process';
 import { createReadStream } from 'fs';
 
@@ -61,7 +61,15 @@ const failedSpawn = (cmd, err) => {
   console.error(err);
 }
 
+const cleanupFile = file =>
+  unlink(file).catch(console.error);
+
+const removeFiles = (prefix, extns) =>
+  extns.map(ext => `${prefix}.${ext}`)
+       .map(cleanupFile);
+
 // TODO: Clean this mess up.
+// Flow is extremely hard to follow and error handling is all over the place.
 server.on('request', (req, res) => {
   res.setHeader('Accept', 'text/plain');
 
@@ -82,6 +90,7 @@ server.on('request', (req, res) => {
   const latex = decodeURIComponent(req.url).slice(1);
 
   const prefix = slug();
+
   const tex = spawn('pdflatex', [`-jobname=${prefix}`]);
 
   // SUPER SECURE
@@ -96,13 +105,15 @@ server.on('request', (req, res) => {
     }
   });
 
-  // Check for successful TeX output, otherwise return an error to the client
-  // and some placeholder HTML indicating an error.
-  tex.on('exit', (code, signal) => {
+  // TeX fails - no PDF or AUX
+  tex.on('exit', async (code, signal) => {
     if (code) {
       console.error(`TeX exited with code: ${code} and signal: ${signal}`);
 
       res.statusCode = 500;
+
+      await Promise.all(removeFiles(prefix, ['log', 'aux']));
+
       return res.end(`${STATUS_CODES[500]}\n`);
     }
 
@@ -112,11 +123,15 @@ server.on('request', (req, res) => {
       console.error('pdf2svg Error:', err.toString());
     });
 
-    convert.on('exit', (code, signal) => {
+    // TeX succeeds but pdf2svg fails - no SVG
+    convert.on('exit', async (code, signal) => {
       if (code) {
         console.error(`pdf2svg exited with code: ${code} and signal: ${signal}`);
 
         res.statusCode = 500;
+
+        await Promise.all(removeFiles(prefix, ['pdf', 'aux', 'log']));
+
         return res.end(`${STATUS_CODES[500]}\n`);
       }
 
@@ -126,6 +141,9 @@ server.on('request', (req, res) => {
       res.writeHead(200, { 'content-type': 'image/svg+xml' });
 
       svgStream.pipe(res);
+      svgStream.on('close', async () => {
+        await Promise.all(removeFiles(prefix, ['pdf', 'aux', 'log', 'svg']));
+      });
     });
   });
 });

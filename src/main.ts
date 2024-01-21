@@ -15,7 +15,8 @@ const offset = delimiter.length;
   * TODO: Use standalone document class (amsmath). */
 const formatLatexRequest = (latex: string) => {
     const doc =
-      `\\documentclass{article}
+      `\\documentclass{standalone}
+      \\usepackage{amsmath}
       \\begin{document}
       ${latex}
       \\end{document}`;
@@ -37,14 +38,6 @@ const requestSVG = (latex: string) =>
         referrerPolicy: 'no-referrer',
     }).then(res => res.text())
         .then(txt => txt.slice(txt.indexOf('<svg')));
-
-// const createSVG = (raw: string): Node | null => {
-//     const svg = document.createElement('svg');
-//
-//     svg.innerHTML = raw;
-//
-//     return svg.firstChild;
-// };
 
 /** parse recursively sections [content] into a list containing markdown and
   * LaTeX blocks. */
