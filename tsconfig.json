@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["es2023"],
+    "lib": ["es2023", "dom"],
     "module": "Node16",
     "target": "es2022",
     "isolatedModules": true,
