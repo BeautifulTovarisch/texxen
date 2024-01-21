@@ -13,11 +13,15 @@ const offset = delimiter.length;
   * parse the snippet as a standalone document.
   *
   * TODO: Use standalone document class (amsmath). */
-const formatLatexRequest = (latex: string) =>
-    encodeURIComponent(`\\documentclass{article}
-\\begin{document}
-${latex}
-\\end{document}`);
+const formatLatexRequest = (latex: string) => {
+    const doc =
+      `\\documentclass{article}
+      \\begin{document}
+      ${latex}
+      \\end{document}`;
+
+    return encodeURIComponent(doc.trim());
+};
 
 /** requestSVG is a promise encapsulating a request to the TeX server which
   * transforms a LaTeX expression into an SVG */
@@ -34,13 +38,13 @@ const requestSVG = (latex: string) =>
     }).then(res => res.text())
         .then(txt => txt.slice(txt.indexOf('<svg')));
 
-const createSVG = (raw: string): Node | null => {
-    const svg = document.createElement('svg');
-
-    svg.innerHTML = raw;
-
-    return svg.firstChild;
-};
+// const createSVG = (raw: string): Node | null => {
+//     const svg = document.createElement('svg');
+//
+//     svg.innerHTML = raw;
+//
+//     return svg.firstChild;
+// };
 
 /** parse recursively sections [content] into a list containing markdown and
   * LaTeX blocks. */
@@ -87,15 +91,17 @@ export default class MarkTeX extends Plugin {
 
             const text = await this.app.vault.read(note);
 
-            const svgs = await Promise.all(parse(text).map(requestSVG));
+            const parsed = parse(text);
 
-            const svgTags = svgs.map(createSVG);
+            const svgs = await Promise.all(parsed.map(requestSVG));
 
-            const maths = element.findAll('.math');
+            const maths = document.querySelectorAll('.math');
 
-            if (svgTags[0]) {
-                maths[0].replaceWith(svgTags[0]);
-            }
+            maths.forEach((m, i) => {
+                if (svgs[i]) {
+                    m.innerHTML = svgs[i];
+                }
+            });
 
             void(element);
             void(context);

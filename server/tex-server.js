@@ -30,7 +30,7 @@ const cacheTTL = 3600 * 24;
   * files. This is done to avoid a race condition between TeX writing the same
   * output file before pdf2svg has completed its work. */
 const slug = () =>
-  Math.floor(Math.random() * 1e4)
+  Math.floor(Math.random() * 1e5)
 
 const server = createServer({
   keepAlive: true
