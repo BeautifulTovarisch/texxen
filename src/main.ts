@@ -16,8 +16,11 @@ const offset = delimiter.length;
 const formatLatexRequest = (latex: string) => {
     const doc =
       `\\documentclass{standalone}
-      \\usepackage{amsmath}
+      \\usepackage{tikz}
+      \\usepackage{graphicx}
+      \\usepackage{xcolor}
       \\begin{document}
+      \\color{white}
       ${latex}
       \\end{document}`;
 
@@ -38,6 +41,19 @@ const requestSVG = (latex: string) =>
         referrerPolicy: 'no-referrer',
     }).then(res => res.text())
         .then(txt => txt.slice(txt.indexOf('<svg')));
+
+const createSVG = (svg: string, id: number) => {
+    const el = document.createElement('svg');
+    el.innerHTML = svg;
+
+    const child = el.firstElementChild;
+
+    if (child) {
+        child.id = `tex-${id.toString()}`;
+    }
+
+    return child;
+};
 
 /** parse recursively sections [content] into a list containing markdown and
   * LaTeX blocks. */
@@ -70,6 +86,21 @@ export const parse = (content: string): string[] => {
     return [latex].concat(parse(content.slice(end+offset)));
 };
 
+// Insert [replacement] as the child of [orig]'s parent.
+const replaceElement = (orig: Element, replacement: Element|null): void => {
+    if (!orig.parentNode) {
+        return;
+    }
+
+    const parent = orig.parentNode;
+
+    parent.removeChild(orig);
+
+    if (replacement) {
+        parent.append(replacement);
+    }
+};
+
 /** TeXXen looks for embedded LaTeX in a markdown document and uses a local TeX
   * installation to render the TeX instructions as SVGs in the final output. The
   * plugin uses markdown-it separately to parse the non-LaTeX content. */
@@ -88,11 +119,16 @@ export default class MarkTeX extends Plugin {
 
             const svgs = await Promise.all(parsed.map(requestSVG));
 
+            const svgNodes = svgs.map(createSVG);
+
             const maths = document.querySelectorAll('.math');
 
             maths.forEach((m, i) => {
-                if (svgs[i]) {
-                    m.innerHTML = svgs[i];
+                if (svgNodes[i]) {
+                    m.removeAttribute('class');
+                    console.log(typeof svgNodes[i]);
+
+                    replaceElement(m, svgNodes[i]);
                 }
             });
 
