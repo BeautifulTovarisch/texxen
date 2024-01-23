@@ -148,8 +148,7 @@ export default class MarkTeX extends Plugin {
 
             const svgNodes = svgs.map(createSVG);
 
-            const maths = document.querySelectorAll('.math');
-
+            const maths = document.querySelectorAll('.math-block');
 
             maths.forEach((m, i) => {
                 if (svgNodes[i]) {
