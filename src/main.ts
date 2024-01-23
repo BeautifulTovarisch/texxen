@@ -55,6 +55,33 @@ const createSVG = (svg: string, id: number) => {
     return child;
 };
 
+/** uniquelyIdentify traverses [svg] and prefixes each reference and id with 
+ * [prefix]. This is done to ensure no clashing occurs between different 
+ * SVGs in the same view. */
+const uniquelyIdentify = (el: Element, suffix: string) => {
+    if (!el) {
+        return;
+    }
+
+    if (!el.children) {
+        el.id = `${el.id}-${suffix}`;
+    }
+
+    // Basically DFS on an element.
+    for (let i = 0; i < el.children.length; i++) {
+        const child = el.children[i];
+
+        child.id = `${child.id}-${suffix}`;
+        if (child.hasAttribute('xlink:href')) {
+            const ref = child.getAttribute('xlink:href');
+
+            child.setAttribute('xlink:href', `${ref}-${suffix}`);
+        }
+
+        uniquelyIdentify(child, suffix);
+    }
+};
+
 /** parse recursively sections [content] into a list containing markdown and
   * LaTeX blocks. */
 export const parse = (content: string): string[] => {
@@ -123,10 +150,13 @@ export default class MarkTeX extends Plugin {
 
             const maths = document.querySelectorAll('.math');
 
+
             maths.forEach((m, i) => {
                 if (svgNodes[i]) {
+                    // Typescript is unable to infer these are non-null
+                    uniquelyIdentify(svgNodes[i]!, svgNodes[i]!.id);
+
                     m.removeAttribute('class');
-                    console.log(typeof svgNodes[i]);
 
                     replaceElement(m, svgNodes[i]);
                 }

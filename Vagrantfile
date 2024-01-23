@@ -13,6 +13,21 @@ nvm install --lts
 node --version
 SCRIPT
 
+$tex = <<-TEX
+curl -L -O https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
+
+tar -xvf install-tl-unx.tar.gz
+
+# TODO: Find a cleaner way to do this.
+find . -type f -name "install-tl" -exec perl {} -profile /vagrant/server/texlive.profile \';'
+
+echo 'export PATH=$PATH:/usr/local/texlive/2023/bin/x86_64-linux' >> ~/.bashrc
+
+source ~/.bashrc
+
+tlgmr install pgf amsmath standalone xcolor bibtex
+TEX
+
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
@@ -26,8 +41,15 @@ Vagrant.configure("2") do |config|
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/noble64"
 
+  config.vm.provision "update", type: "shell", privileged: true, inline: "apt-get update -y"
+  config.vm.provision "pdf2svg", type: "shell", privileged: true, inline: "apt-get install -y pdf2svg"
+
   config.vm.provision "nvm", type: "shell", privileged: false do |s|
     s.inline = $nvm 
+  end
+
+  config.vm.provision "tex", type: "shell", privileged: true do |s|
+    s.inline = $tex
   end
 
   # Disable automatic box update checking. If you disable this, then
