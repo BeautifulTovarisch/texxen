@@ -84,7 +84,7 @@ const uniquelyIdentify = (el: Element, suffix: string) => {
 
 /** parse recursively sections [content] into a list containing markdown and
   * LaTeX blocks. */
-export const parse = (content: string): string[] => {
+const parse = (content: string): string[] => {
     if (!content) {
         return [];
     }
