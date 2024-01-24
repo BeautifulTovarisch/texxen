@@ -21,11 +21,10 @@ tar -xvf install-tl-unx.tar.gz
 # TODO: Find a cleaner way to do this.
 find . -type f -name "install-tl" -exec perl {} -profile /vagrant/server/texlive.profile \';'
 
-echo 'export PATH=$PATH:/usr/local/texlive/2023/bin/x86_64-linux' >> ~/.bashrc
+echo 'export PATH=$PATH:/usr/local/texlive/2023/bin/x86_64-linux' >> /home/vagrant/.bashrc
 
-source ~/.bashrc
-
-tlgmr install pgf amsmath standalone xcolor bibtex
+# Not necessary for root to tlmgr in its path
+/usr/local/texlive/2023/bin/x86_64-linux/tlmgr install pgf pgfplots amsmath standalone xcolor bibtex
 TEX
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure

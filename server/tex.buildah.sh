@@ -23,4 +23,4 @@ buildah run $tex perl install-tl-20240122/install-tl -profile texlive.profile
 # Add TeX to path
 buildah config --env PATH="$PATH:/usr/local/texlive/2023/bin/x86_64-linux" $tex
 
-buildah run $tex tlgmr install pgf amsmath xcolor standalone bibtex
+buildah run $tex /usr/local/texlive/2023/bin/x86_64-linux/tlmgr install pgf pgfplots amsmath xcolor standalone bibtex

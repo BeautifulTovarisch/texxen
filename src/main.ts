@@ -16,6 +16,7 @@ const formatLatexRequest = (latex: string) => {
     const doc =
       `\\documentclass{standalone}
       \\usepackage{tikz}
+      \\usepackage{pgfplots}
       \\usepackage{graphicx}
       \\usepackage{xcolor}
       \\begin{document}
