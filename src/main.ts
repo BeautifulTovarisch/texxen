@@ -11,8 +11,7 @@ const offset = delimiter.length;
 
 /** formatLatexRequest wraps [latex] in a minimal structure needed for TeX to
   * parse the snippet as a standalone document.
-  *
-  * TODO: Use standalone document class (amsmath). */
+  */
 const formatLatexRequest = (latex: string) => {
     const doc =
       `\\documentclass{standalone}
@@ -42,14 +41,19 @@ const requestSVG = (latex: string) =>
     }).then(res => res.text())
         .then(txt => txt.slice(txt.indexOf('<svg')));
 
-const createSVG = (svg: string, id: number) => {
-    const el = document.createElement('svg');
+// Compute 'sufficiently random' unique identifier.
+const randomId = () => 'xxxxxxxxxxxxxxxx'.replace(/x/g, () =>
+    Math.floor((Math.random() * 16)).toString(16)
+);
+
+const createSVG = (svg: string) => {
+    const el = document.createElement('div');
     el.innerHTML = svg;
 
     const child = el.firstElementChild;
 
     if (child) {
-        child.id = `tex-${id.toString()}`;
+        child.id = `tex-${randomId()}`;
     }
 
     return child;
@@ -141,11 +145,9 @@ export default class MarkTeX extends Plugin {
             }
 
             const text = await this.app.vault.read(note);
+            const requests = parse(text).map(requestSVG);
 
-            const parsed = parse(text);
-
-            const svgs = await Promise.all(parsed.map(requestSVG));
-
+            const svgs = await Promise.all(requests);
             const svgNodes = svgs.map(createSVG);
 
             const maths = document.querySelectorAll('.math-block');
@@ -154,8 +156,6 @@ export default class MarkTeX extends Plugin {
                 if (svgNodes[i]) {
                     // Typescript is unable to infer these are non-null
                     uniquelyIdentify(svgNodes[i]!, svgNodes[i]!.id);
-
-                    m.removeAttribute('class');
 
                     replaceElement(m, svgNodes[i]);
                 }
