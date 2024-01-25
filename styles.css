@@ -1,0 +1,12 @@
+.tex {
+  text-align: center;
+  break-inside: avoid;
+  break-before: avoid;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tex svg {
+  flex-grow: 1;
+}

@@ -50,20 +50,16 @@ const randomId = () => 'xxxxxxxxxxxxxxxx'.replace(/x/g, () =>
 const createSVG = (svg: string) => {
     const el = document.createElement('div');
     el.innerHTML = svg;
+    el.id = `tex-${randomId()}`;
+    el.setAttribute('class', 'tex');
 
-    const child = el.firstElementChild;
-
-    if (child) {
-        child.id = `tex-${randomId()}`;
-    }
-
-    return child;
+    return el;
 };
 
-/** uniquelyIdentify traverses [svg] and prefixes each reference and id with 
- * [prefix]. This is done to ensure no clashing occurs between different 
- * SVGs in the same view. */
-const uniquelyIdentify = (el: Element, suffix: string) => {
+/** namespaceEl traverses [el] and adds [suffix] to each reference and id
+ * This is done to ensure no clashing occurs between different SVGs in the same
+ * view. */
+const namespaceEl = (el: Element, suffix: string) => {
     if (!el) {
         return;
     }
@@ -83,7 +79,7 @@ const uniquelyIdentify = (el: Element, suffix: string) => {
             child.setAttribute('xlink:href', `${ref}-${suffix}`);
         }
 
-        uniquelyIdentify(child, suffix);
+        namespaceEl(child, suffix);
     }
 };
 
@@ -156,7 +152,7 @@ export default class MarkTeX extends Plugin {
             maths.forEach((m, i) => {
                 if (svgNodes[i]) {
                     // Typescript is unable to infer these are non-null
-                    uniquelyIdentify(svgNodes[i]!, svgNodes[i]!.id);
+                    namespaceEl(svgNodes[i]!, svgNodes[i]!.id);
 
                     replaceElement(m, svgNodes[i]);
                 }
